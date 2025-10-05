@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>You're Invited — Playful Pastel Party</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: linear-gradient(135deg, #fffbf5, #f0f8ff, #fef6fb);
+  --card: #ffffff;
+  --accent: #0f1724;
+  --muted: #6b7280;
+  --accent-2: #0ea5a4;
+  --radius: 20px;
+}
+* {box-sizing: border-box;}
+body {
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background: var(--bg);
+  color: var(--accent);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.wrap {
+  max-width: 800px;
+  margin: 36px auto;
+  padding: 40px;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(145deg, #fff8f0, #f0fcff);
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+}
+
+header {margin-bottom: 20px;}
+h1 {
+  font-family: 'Great Vibes', cursive;
+  font-size: 36px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+p.lead {
+  font-size: 16px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.card {
+  background: #ffffffcc;
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 18px 0;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.06);
+}
+.card.fade-slide {opacity:0; transform: translateY(30px); transition: all .8s ease-out;}
+.card.fade-slide.show {opacity:1; transform: translateY(0);}
+
+h2, h3 {font-family: 'Great Vibes', cursive; margin-bottom: 10px; letter-spacing: 1px;}
+p, .address, .message {line-height: 1.8; color: var(--muted);}
+
+.cta {display:flex; justify-content:center; gap:12px; margin-top:16px;}
+.btn {
+  padding: 10px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,36,0.08);
+  background: transparent;
+  cursor: pointer;
+  font-weight:600;
+  transition: all .3s ease;
+}
+.btn:hover {transform: scale(1.05); box-shadow: 0 8px 20px rgba(0,0,0,0.08);}
+.btn.primary {background: var(--accent-2); color:white; border:0;}
+
+.map {width:100%; height:220px; border-radius:14px; overflow:hidden; border:1px solid rgba(2,6,23,0.04); margin-top:10px;}
+footer {margin-top: 24px; color: var(--muted); font-size: 14px;}
+
+/* Confetti piece */
+.confetti-piece {position: absolute; width: 8px; height: 8px; opacity: 0.8; border-radius: 50%;}
+
+/* Balloons */
+.balloon {
+  position: absolute;
+  border-radius: 50% 50% 50% 50%;
+  border: 2px solid #ffdce0;
+  opacity: 0.8;
+  pointer-events: none;
+  background: linear-gradient(45deg,#ffe4e6,#fef6fb);
+}
+
+@media(max-width:760px){
+  .wrap{padding:20px;}
+  h1{font-size:28px;}
+}
+</style>
+</head>
+<body>
+<canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
+
+<div class="wrap">
+  <header>
+    <h1>You're Invited!</h1>
+    <p class="lead">A soft pastel playful invitation to celebrate together</p>
+  </header>
+
+  <div class="card fade-slide">
+    <h2>About Me</h2>
+    <p>Hello — I'm <strong>[Your Name]</strong>. I love coffee, music, and catching up with friends. Let's celebrate the little joys together!</p>
+    <h3>When</h3>
+    <p class="address">Saturday, October 18 • 5:00 PM</p>
+  </div>
+
+  <div class="card fade-slide">
+    <h2>Location</h2>
+    <p class="address">123 Riverside Ave, Phnom Penh, Cambodia</p>
+    <div class="map">
+      <iframe src="https://www.google.com/maps?q=Phnom+Penh+Riverside&output=embed" width="100%" height="100%" style="border:0;" loading="lazy"></iframe>
+    </div>
+    <div class="cta">
+      <button class="btn" id="openMaps">Open in Maps</button>
+      <button class="btn primary" id="rsvp">RSVP</button>
+    </div>
+  </div>
+
+  <div class="card fade-slide">
+    <h2>Reason for Invitation</h2>
+    <p class="message">I hosted a small project this year and want to celebrate milestones with close friends. Snacks, music, good company — come join if you're free!</p>
+    <div class="cta">
+      <button class="btn" id="messageBtn">Message Me</button>
+      <button class="btn primary" id="confirmBtn">Count Me In</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>Made with ☕ • [Your Name]</p>
+  </footer>
+</div>
+
+<script>
+// Confetti background
+const canvas=document.getElementById('confettiCanvas');
+const ctx=canvas.getContext('2d');
+let W=canvas.width=window.innerWidth;
+let H=canvas.height=window.innerHeight;
+const pieces=[];
+const colors=['#FFB6C1','#B0E0E6','#FFE4E6','#FFFACD','#E0FFFF'];
+for(let i=0;i<100;i++){
+  pieces.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*6+2,d:Math.random()*50,color: colors[Math.floor(Math.random()*colors.length)],tilt: Math.random()*10-10});
+}
+function draw(){ 
+  ctx.clearRect(0,0,W,H);
+  pieces.forEach(p=>{
+    ctx.beginPath();
+    ctx.fillStyle=p.color;
+    ctx.arc(p.x,p.y,p.r,0,2*Math.PI);
+    ctx.fill();
+  });
+  update();
+}
+let angle=0;
+function update(){
+  angle+=0.01;
+  pieces.forEach(p=>{
+    p.y += (Math.cos(angle+p.d)+1+p.r/2);
+    p.x += Math.sin(angle);
+    if(p.y>H){ p.x=Math.random()*W; p.y=0; }
+  });
+}
+function animate(){ draw(); requestAnimationFrame(animate); }
+animate();
+window.addEventListener('resize',()=>{ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; });
+
+// Floating balloons
+function createBalloon(){
+  const b=document.createElement('div'); b.className='balloon';
+  const size = 30 + Math.random()*20; b.style.width=size+'px'; b.style.height=size*1.5+'px';
+  b.style.opacity = 0.5+Math.random()*0.5;
+  b.style.left=Math.random()*90+'%'; b.style.bottom='-80px';
+  document.body.appendChild(b);
+  const floatSpeed = 5000+Math.random()*5000; const horizontalDrift = (Math.random()-0.5)*100;
+  const startLeft = b.offsetLeft; let startTime=null;
+  function animateBalloon(timestamp){
+    if(!startTime) startTime=timestamp;
+    const fraction=(timestamp-startTime)/floatSpeed;
+    b.style.bottom=(-80+fraction*(window.innerHeight+100))+'px';
+    b.style.left=startLeft+horizontalDrift*fraction+'px';
+    b.style.transform=`rotate(${fraction*360}deg)`;
+    if(fraction<1) requestAnimationFrame(animateBalloon); else b.remove();
+  }
+  requestAnimationFrame(animateBalloon);
+}
+setInterval(createBalloon,800);
+
+// Scroll fade-slide animation
+const faders=document.querySelectorAll('.fade-slide');
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{ if(entry.isIntersecting) entry.target.classList.add('show'); });
+},{threshold:0.2});
+faders.forEach(f=>observer.observe(f));
+
+// Confetti burst on RSVP
+function confettiBurst(x,y){
+  for(let i=0;i<30;i++){
+    const c=document.createElement('div');
+    c.className='confetti-piece';
+    c.style.left=x+'px'; c.style.top=y+'px';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    document.body.appendChild(c);
+    const angle=Math.random()*2*Math.PI;
+    const speed=2+Math.random()*3; let posX=0,posY=0;
+    const anim=setInterval(()=>{
+      posX+=Math.cos(angle)*speed; posY+=Math.sin(angle)*speed+0.5;
+      c.style.transform=`translate(${posX}px,${posY}px) rotate(${angle*50}rad)`;
+    },16);
+    setTimeout(()=>{clearInterval(anim); c.remove();},1500);
+  }
+}
+document.getElementById('rsvp').addEventListener('click', e=>{
+  const rect=e.target.getBoundingClientRect();
+  confettiBurst(rect.left+rect.width/2,rect.top+rect.height/2);
+  localStorage.setItem('rsvp_state','yes');
+  e.target.textContent='You RSVP’d ✓'; e.target.disabled=true;
+});
+document.getElementById('openMaps').addEventListener('click', ()=>{
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('123 Riverside Ave, Phnom Penh, Cambodia'),'_blank');
+});
+document.getElementById('messageBtn').addEventListener('click', ()=>{
+  const mail = prompt('Type a short message to the host:');
+  if(mail){ const subject=encodeURIComponent("I'd like to join"); const body=encodeURIComponent(mail);
+    window.location.href=`mailto:your.email@example.com?subject=${subject}&body=${body}`;
+  }
+});
+</script>
+</body>
+</html>
